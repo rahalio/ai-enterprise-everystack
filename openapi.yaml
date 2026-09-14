@@ -1,0 +1,500 @@
+openapi: 3.0.3
+info:
+  title: Everystack
+  version: 0.1.0
+  description: >-
+    Enterprise AI adoption programme system across every application, business
+    process, and employee with readiness, funding, and ethics gates.
+  x-product-slug: ai-enterprise-everystack
+  x-source: ai-in-enterprise/Microsoft Enterprise AI white paper/
+servers:
+  - url: https://api.example.com
+tags:
+  - name: Readiness
+  - name: Initiatives
+  - name: Funding
+  - name: Knowledge
+  - name: Ethics
+  - name: Scorecards
+paths:
+  /v1/readiness-assessments:
+    get:
+      operationId: listReadinessAssessments
+      tags: [Readiness]
+      security: [{ BearerAuth: [] }]
+      responses:
+        "200":
+          description: Assessments page
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ListEnvelopeReadinessAssessment" }
+    post:
+      operationId: createReadinessAssessment
+      tags: [Readiness]
+      security: [{ BearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ReadinessAssessment" }
+      responses:
+        "201":
+          description: Assessment created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/DataEnvelopeReadinessAssessment" }
+  /v1/initiatives:
+    get:
+      operationId: listInitiatives
+      tags: [Initiatives]
+      security: [{ BearerAuth: [] }]
+      parameters:
+        - $ref: "#/components/parameters/Cursor"
+        - $ref: "#/components/parameters/Limit"
+        - name: pillar
+          in: query
+          schema:
+            type: string
+            enum: [application, business_process, employee]
+      responses:
+        "200":
+          description: Initiatives page
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ListEnvelopeInitiative" }
+    post:
+      operationId: createInitiative
+      tags: [Initiatives]
+      security: [{ BearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/InitiativeCreate" }
+      responses:
+        "201":
+          description: Initiative created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/DataEnvelopeInitiative" }
+  /v1/initiatives/{initiativeId}:
+    parameters:
+      - name: initiativeId
+        in: path
+        required: true
+        schema: { type: string }
+    get:
+      operationId: getInitiative
+      tags: [Initiatives]
+      security: [{ BearerAuth: [] }]
+      responses:
+        "200":
+          description: Initiative
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/DataEnvelopeInitiative" }
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /v1/funding-requests:
+    get:
+      operationId: listFundingRequests
+      tags: [Funding]
+      security: [{ BearerAuth: [] }]
+      responses:
+        "200":
+          description: Funding requests
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ListEnvelopeFundingRequest" }
+    post:
+      operationId: createFundingRequest
+      tags: [Funding]
+      security: [{ BearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/FundingRequest" }
+      responses:
+        "201":
+          description: Funding request created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/DataEnvelopeFundingRequest" }
+  /v1/funding-requests/{fundingRequestId}/decision:
+    parameters:
+      - name: fundingRequestId
+        in: path
+        required: true
+        schema: { type: string }
+    post:
+      operationId: decideFundingRequest
+      tags: [Funding]
+      security: [{ BearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [decision]
+              properties:
+                decision:
+                  type: string
+                  enum: [approved, denied, deferred]
+                rationale: { type: string }
+      responses:
+        "200":
+          description: Decision recorded
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/DataEnvelopeFundingRequest" }
+  /v1/knowledge-workstreams:
+    get:
+      operationId: listKnowledgeWorkstreams
+      tags: [Knowledge]
+      security: [{ BearerAuth: [] }]
+      responses:
+        "200":
+          description: Knowledge workstreams
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ListEnvelopeKnowledgeWorkstream" }
+    post:
+      operationId: createKnowledgeWorkstream
+      tags: [Knowledge]
+      security: [{ BearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/KnowledgeWorkstream" }
+      responses:
+        "201":
+          description: Workstream created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/DataEnvelopeKnowledgeWorkstream" }
+  /v1/ethics-gates:
+    get:
+      operationId: listEthicsGates
+      tags: [Ethics]
+      security: [{ BearerAuth: [] }]
+      parameters:
+        - name: initiativeId
+          in: query
+          schema: { type: string }
+      responses:
+        "200":
+          description: Ethics gates
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ListEnvelopeEthicsGate" }
+    post:
+      operationId: submitEthicsGate
+      tags: [Ethics]
+      security: [{ BearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/EthicsGate" }
+      responses:
+        "201":
+          description: Ethics gate submitted
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/DataEnvelopeEthicsGate" }
+  /v1/scorecards/programme:
+    get:
+      operationId: getProgrammeScorecard
+      tags: [Scorecards]
+      security: [{ BearerAuth: [] }]
+      parameters:
+        - name: period
+          in: query
+          schema: { type: string }
+      responses:
+        "200":
+          description: Holistic programme scorecard
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/DataEnvelopeProgrammeScorecard" }
+components:
+
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  parameters:
+    Cursor:
+      name: cursor
+      in: query
+      schema: { type: string }
+    Limit:
+      name: limit
+      in: query
+      schema: { type: integer, minimum: 1, maximum: 200, default: 50 }
+  responses:
+    Unauthorized:
+      description: Missing or invalid credentials
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/Problem" }
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/Problem" }
+    UnprocessableEntity:
+      description: Validation failed
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/Problem" }
+  schemas:
+    ResponseMeta:
+      type: object
+      required: [requestId, timestamp]
+      properties:
+        requestId: { type: string }
+        timestamp: { type: string, format: date-time }
+    Problem:
+      type: object
+      required: [type, title, status]
+      properties:
+        type: { type: string, format: uri }
+        title: { type: string }
+        status: { type: integer }
+        detail: { type: string }
+
+    ReadinessAssessment:
+      type: object
+      required: [organizationId, scores]
+      properties:
+        id: { type: string }
+        organizationId: { type: string }
+        scores:
+          type: object
+          properties:
+            strategy: { type: number, format: float }
+            data: { type: number, format: float }
+            skills: { type: number, format: float }
+            ethics: { type: number, format: float }
+            operatingModel: { type: number, format: float }
+        recommendations:
+          type: array
+          items: { type: string }
+        completedAt: { type: string, format: date-time }
+    Initiative:
+      type: object
+      required: [id, name, pillar, status]
+      properties:
+        id: { type: string }
+        name: { type: string }
+        pillar:
+          type: string
+          enum: [application, business_process, employee]
+        status:
+          type: string
+          enum: [proposed, funded, building, live, paused, retired]
+        capabilityType:
+          type: string
+          enum: [prebuilt_cognitive, custom_model, conversational_agent, process_ai, citizen_enablement, knowledge_foundation]
+        outcomeKpi: { type: string }
+        ownerId: { type: string }
+        playbookId: { type: string }
+    InitiativeCreate:
+      type: object
+      required: [name, pillar]
+      properties:
+        name: { type: string }
+        pillar:
+          type: string
+          enum: [application, business_process, employee]
+        capabilityType:
+          type: string
+          enum: [prebuilt_cognitive, custom_model, conversational_agent, process_ai, citizen_enablement, knowledge_foundation]
+        outcomeKpi: { type: string }
+        ownerId: { type: string }
+        playbookId: { type: string }
+    FundingRequest:
+      type: object
+      required: [initiativeId, goals, justification, amountRequested]
+      properties:
+        id: { type: string }
+        initiativeId: { type: string }
+        goals: { type: string }
+        justification: { type: string }
+        amountRequested: { type: number }
+        currency: { type: string }
+        decision:
+          type: string
+          enum: [pending, approved, denied, deferred]
+    KnowledgeWorkstream:
+      type: object
+      required: [name, milestone]
+      properties:
+        id: { type: string }
+        name: { type: string }
+        milestone:
+          type: string
+          enum: [silo_inventory, rot_cleanup, unstructured_indexed, searchable_knowledge, model_consumable]
+        percentComplete: { type: number, format: float }
+        accessControlVerified: { type: boolean }
+    EthicsGate:
+      type: object
+      required: [initiativeId, fairness, reliabilitySafety, privacySecurity, inclusivity, transparency, accountability]
+      properties:
+        id: { type: string }
+        initiativeId: { type: string }
+        fairness: { type: boolean }
+        reliabilitySafety: { type: boolean }
+        privacySecurity: { type: boolean }
+        inclusivity: { type: boolean }
+        transparency: { type: boolean }
+        accountability: { type: boolean }
+        evidenceUri: { type: string }
+        result:
+          type: string
+          enum: [passed, failed, conditional]
+    ProgrammeScorecard:
+      type: object
+      required: [period]
+      properties:
+        period: { type: string }
+        applicationCoveragePct: { type: number, format: float }
+        processCoveragePct: { type: number, format: float }
+        employeeActiveUsers: { type: integer }
+        ethicsPassRate: { type: number, format: float }
+        singlePilotSpendShare: { type: number, format: float }
+
+    DataEnvelopeReadinessAssessment:
+      type: object
+      required: [data, meta]
+      properties:
+        data: { $ref: "#/components/schemas/ReadinessAssessment" }
+        meta: { $ref: "#/components/schemas/ResponseMeta" }
+    ListEnvelopeReadinessAssessment:
+      type: object
+      required: [data, meta]
+      properties:
+        data:
+          type: object
+          required: [items]
+          properties:
+            items:
+              type: array
+              items: { $ref: "#/components/schemas/ReadinessAssessment" }
+            nextCursor: { type: string }
+        meta: { $ref: "#/components/schemas/ResponseMeta" }
+
+
+    DataEnvelopeInitiative:
+      type: object
+      required: [data, meta]
+      properties:
+        data: { $ref: "#/components/schemas/Initiative" }
+        meta: { $ref: "#/components/schemas/ResponseMeta" }
+    ListEnvelopeInitiative:
+      type: object
+      required: [data, meta]
+      properties:
+        data:
+          type: object
+          required: [items]
+          properties:
+            items:
+              type: array
+              items: { $ref: "#/components/schemas/Initiative" }
+            nextCursor: { type: string }
+        meta: { $ref: "#/components/schemas/ResponseMeta" }
+
+
+    DataEnvelopeFundingRequest:
+      type: object
+      required: [data, meta]
+      properties:
+        data: { $ref: "#/components/schemas/FundingRequest" }
+        meta: { $ref: "#/components/schemas/ResponseMeta" }
+    ListEnvelopeFundingRequest:
+      type: object
+      required: [data, meta]
+      properties:
+        data:
+          type: object
+          required: [items]
+          properties:
+            items:
+              type: array
+              items: { $ref: "#/components/schemas/FundingRequest" }
+            nextCursor: { type: string }
+        meta: { $ref: "#/components/schemas/ResponseMeta" }
+
+
+    DataEnvelopeKnowledgeWorkstream:
+      type: object
+      required: [data, meta]
+      properties:
+        data: { $ref: "#/components/schemas/KnowledgeWorkstream" }
+        meta: { $ref: "#/components/schemas/ResponseMeta" }
+    ListEnvelopeKnowledgeWorkstream:
+      type: object
+      required: [data, meta]
+      properties:
+        data:
+          type: object
+          required: [items]
+          properties:
+            items:
+              type: array
+              items: { $ref: "#/components/schemas/KnowledgeWorkstream" }
+            nextCursor: { type: string }
+        meta: { $ref: "#/components/schemas/ResponseMeta" }
+
+
+    DataEnvelopeEthicsGate:
+      type: object
+      required: [data, meta]
+      properties:
+        data: { $ref: "#/components/schemas/EthicsGate" }
+        meta: { $ref: "#/components/schemas/ResponseMeta" }
+    ListEnvelopeEthicsGate:
+      type: object
+      required: [data, meta]
+      properties:
+        data:
+          type: object
+          required: [items]
+          properties:
+            items:
+              type: array
+              items: { $ref: "#/components/schemas/EthicsGate" }
+            nextCursor: { type: string }
+        meta: { $ref: "#/components/schemas/ResponseMeta" }
+
+
+    DataEnvelopeProgrammeScorecard:
+      type: object
+      required: [data, meta]
+      properties:
+        data: { $ref: "#/components/schemas/ProgrammeScorecard" }
+        meta: { $ref: "#/components/schemas/ResponseMeta" }
+    ListEnvelopeProgrammeScorecard:
+      type: object
+      required: [data, meta]
+      properties:
+        data:
+          type: object
+          required: [items]
+          properties:
+            items:
+              type: array
+              items: { $ref: "#/components/schemas/ProgrammeScorecard" }
+            nextCursor: { type: string }
+        meta: { $ref: "#/components/schemas/ResponseMeta" }
+
